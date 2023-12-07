@@ -4,9 +4,8 @@ import { SocketContext } from '../Context/videoContext';
 
 const Notifications = () => {
   const { answerCall, call, callAccepted, setIsVideoCall, isVideoCA } = useContext(SocketContext);
-
   const handleAnswere = () => {
-    answerCall()
+    answerCall()  
   }
   return (
     <>

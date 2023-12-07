@@ -190,19 +190,21 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   });
 
 
-  const handeCall = () => {
+  const handleCall = () => {
     const users = selectedChat.users
-    const ids = users.filter((user) => user._id !== caller._id).map(user => user._id);
+
+    const ids = users.filter((user) => user._id !== caller._id).map(user => user);
+    setCallee(ids[0])
 
     setIsVideoCall(true)
 
-    setCallee(ids[0])
   }
 
 
   return (
     <>
       {selectedChat ? (
+
         <>
           {isVideoCall && <VideoChat />}
 
@@ -302,7 +304,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 }}
               >
                 <div className="z-10 top-3 absolute flex right-6">
-                  <Button onClick={() => handeCall()}> Video call</Button>
+                  <Button onClick={() => handleCall()}> Video call</Button>
 
                   {speak ? (
                     <BsFillMicFill

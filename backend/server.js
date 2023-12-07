@@ -103,11 +103,23 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("callEnded")
   });
 
-  socket.on("callUser", ({ userToCall, signalData, from, name }) => {
-    const userToCallSocketId = activeUser[userToCall];
+  socket.on("callUser", ({ userToCall, signalData, from, name, isVideoCall }) => {
+    const userToCallSocketId = activeUser[userToCall._id];
     const callerSocketId = activeUser[from];
+    io.to(userToCallSocketId).emit("callUser", { signal: signalData, from: callerSocketId, name, isVideoCall, userToCall, callerId: from });
+  });
 
-    io.to(userToCallSocketId).emit("callUser", { signal: signalData, from: callerSocketId, name });
+
+  socket.on("leaveCall", ({ userToCall, isVideoCall }) => {
+    const userToCallSocketId = activeUser[userToCall];
+    io.to(userToCallSocketId).emit("leaveCall", { isVideoCall });
+  });
+
+
+  socket.on("cancelCall", ({ userToCall, isVideoCall }) => {
+    const userToCallSocketId = activeUser[userToCall];
+    console.log("cancel call called ", userToCallSocketId)
+    io.to(userToCallSocketId).emit("cancelCall", { isVideoCall });
   });
 
   socket.on("answerCall", (data) => {

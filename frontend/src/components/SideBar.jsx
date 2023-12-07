@@ -37,8 +37,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const SideBar = ({ children }) => {
-  const { me, callAccepted, name, setName, callEnded, leaveCall, callUser, setIsVideoCall,callee } = useContext(SocketContext);
+  const { callAccepted, call, name, setName, callEnded, leaveCall, cancelCall, callUser, setIsVideoCall, callee } = useContext(SocketContext);
   const classes = useStyles();
+
+  console.log("in sdie nav var", callee)
+
   return (
     <Container className={classes.container}>
       <Paper elevation={10} className={classes.paper}>
@@ -51,15 +54,16 @@ const SideBar = ({ children }) => {
                   Hang Up
                 </Button>
               ) : (
-                <>
-                  <Button variant="contained" color="primary" fullWidth onClick={() => setIsVideoCall(false)} className={classes.margin}>
-                    Cancel
-                  </Button>
-                  <Button variant="contained" color="primary" startIcon={<Phone fontSize="large" />} fullWidth onClick={() => callUser(callee)} className={classes.margin}>
-                    Call
-                  </Button>
-                </>
-              )}
+                callee && (
+                  <>
+                    <Button variant="contained" color="primary" fullWidth onClick={cancelCall} className={classes.margin}>
+                      Cancel
+                    </Button>
+                    <Button variant="contained" color="primary" startIcon={<Phone fontSize="large" />} fullWidth onClick={() => callUser(callee)} className={classes.margin}>
+                      Call
+                    </Button>
+                  </>
+                ))}
             </Grid>
           </Grid>
         </form>

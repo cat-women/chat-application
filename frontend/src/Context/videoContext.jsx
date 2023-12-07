@@ -19,13 +19,10 @@ const ContextProvider = ({ children }) => {
   const [callee, setCallee] = useState(null)
   const [caller, setCaller] = useState(JSON.parse(localStorage.getItem('userInfo')))
 
-
   const myVideo = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
-
-
-  console.log("who is me ", me)
+  console.log("user to call ", callee)
   // sent your socket id
   useEffect(() => {
     if (caller) socket.emit('newUser', caller._id);
@@ -40,8 +37,22 @@ const ContextProvider = ({ children }) => {
       });
     socket.on('me', (id) => setMe(id));
 
-    socket.on('callUser', ({ from, name: callerName, signal }) => {
-      setCall({ isReceivingCall: true, from, name: callerName, signal });
+    socket.on('callUser', ({ from, name, signal, isVideoCall, callerId }) => {
+      setIsVideoCall(isVideoCall)
+      setCall({ isReceivingCall: true, from, name, signal, isCaller: false, callerId });
+    });
+
+    socket.on('leaveCall', () => {
+      setCallEnded(true);
+      connectionRef.current.destroy();
+      setIsVideoCall(false)
+
+      window.location.reload();
+    });
+    socket.on('cancelCall', () => {
+      setCallEnded(true);
+      setIsVideoCall(false)
+      window.location.reload();
     });
   }, [isVideoCall]);
 
@@ -66,9 +77,10 @@ const ContextProvider = ({ children }) => {
 
   const callUser = (id) => {
     const peer = new SimplePeer({ initiator: true, trickle: false, stream });
+    setCall({ isCaller: true })
 
     peer.on('signal', (data) => {
-      socket.emit('callUser', { userToCall: id, signalData: data, from: caller._id, name: caller.name });
+      socket.emit('callUser', { userToCall: id, signalData: data, from: caller._id, name: caller.name, isVideoCall });
     });
 
     peer.on('stream', (currentStream) => {
@@ -86,11 +98,22 @@ const ContextProvider = ({ children }) => {
 
   const leaveCall = () => {
     setCallEnded(true);
-
     connectionRef.current.destroy();
+    setIsVideoCall(false)
+    socket.emit('leaveCall', { userToCall: call.isCaller ? callee._id : call.callerId, isVideoCall });
 
     window.location.reload();
   };
+
+  const cancelCall = () => {
+    setCallEnded(true);
+    connectionRef.current.destroy();
+    setIsVideoCall(false)
+    socket.emit('cancelCall', { userToCall: callee._id, isVideoCall });
+
+    window.location.reload();
+  };
+
 
   return (
     <SocketContext.Provider value={{
@@ -111,7 +134,8 @@ const ContextProvider = ({ children }) => {
       setIsVideoCall,
       setCallee,
       callee,
-      caller, setCaller
+      caller, setCaller,
+      cancelCall
     }}
     >
       {children}
